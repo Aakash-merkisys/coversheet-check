@@ -72,8 +72,8 @@ function handleFileUpload(event) {
     const formData = new FormData();
     formData.append('excelFile', file);
 
-    // Send file to backend API
-    fetch('http://localhost:3000/api/upload-excel', {
+    // Send file to backend API (works both locally and on Render)
+    fetch('/api/upload-excel', {
         method: 'POST',
         body: formData
     })

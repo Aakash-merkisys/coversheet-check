@@ -297,3 +297,99 @@ Planned improvements include:
 - Advanced customer filtering
 - Document preview system
 
+
+
+---
+
+## Backend Setup & Deployment
+
+### Local Development
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the backend server:
+```bash
+npm start
+```
+
+The server will run on `http://localhost:3000`
+
+3. Open the application:
+- Navigate to `http://localhost:3000/coversheet-generator.html`
+- Upload an Excel file to test the upload feature
+
+### Dependencies
+
+The backend uses the following packages:
+- `express` - Web server framework
+- `multer` - File upload middleware
+- `xlsx` - Excel file parsing
+- `cors` - Cross-origin resource sharing
+
+All dependencies are listed in `package.json` and will be installed automatically.
+
+### Deployment to Render
+
+#### Option 1: Using render.yaml (Recommended)
+
+1. Push your code to GitHub
+2. Connect your GitHub repository to Render
+3. Render will automatically detect `render.yaml` and configure the service
+4. Click "Create Web Service"
+5. Your app will be deployed automatically
+
+#### Option 2: Manual Configuration
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Configure the service:
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Environment**: Node
+4. Click "Create Web Service"
+
+### Environment Variables
+
+The application uses `process.env.PORT` which is automatically set by Render. No additional environment variables are required.
+
+### API Endpoints
+
+- `GET /api/health` - Health check endpoint
+- `POST /api/upload-excel` - Upload and process Excel files
+  - Accepts: `multipart/form-data` with field name `excelFile`
+  - File types: `.xlsx`, `.xls`
+  - Max size: 10MB
+  - Returns: JSON with parsed customer records
+
+### File Upload Configuration
+
+- Uploaded files are temporarily stored in the `uploads/` directory
+- Files are automatically deleted after processing
+- Maximum file size: 10MB
+- Supported formats: Excel (.xlsx, .xls)
+
+### Troubleshooting
+
+**Issue**: Excel upload fails with "No file uploaded"
+- **Solution**: Ensure the form field name is `excelFile`
+
+**Issue**: Server not starting on Render
+- **Solution**: Check that `package.json` has the correct start script: `"start": "node server.js"`
+
+**Issue**: CORS errors
+- **Solution**: The server already includes CORS middleware. Ensure you're using relative URLs (`/api/upload-excel`) instead of absolute URLs
+
+**Issue**: File size limit exceeded
+- **Solution**: Reduce Excel file size or increase the limit in `server.js` (multer configuration)
+
+### Testing the Backend
+
+Run the test script to verify backend functionality:
+```bash
+npm test
+```
+
+This will test the Excel upload endpoint and verify data parsing.
