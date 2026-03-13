@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LocalStorage Debug</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>LocalStorage Debug Tool</h1>
+    <button onclick="checkStorage()">Check Storage</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    <button onclick="createTestData()">Create Test Data</button>
+    <div id="output"></div>
+    
+    <script>
+        function checkStorage() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<h2>Storage Contents:</h2>';
+            
+            const data = localStorage.getItem('excelCustomerData');
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data);
+                    output.innerHTML += `<div class="result success">✅ Found ${parsed.length} records</div>`;
+                    output.innerHTML += `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+                } catch (e) {
+                    output.innerHTML += `<div class="result error">❌ Error: ${e.message}</div>`;
+                }
+            } else {
+                output.innerHTML += '<div class="result error">❌ No data found</div>';
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('excelCustomerData');
+            alert('Cleared!');
+            checkStorage();
+        }
+        
+        function createTestData() {
+            const data = [
+                {"ID":"101","Name":"John","Phone Number":"+1-555-0101","revision":"Not Set","status":"Pending"},
+                {"ID":"102","Name":"Jane","Phone Number":"+1-555-0102","revision":"Not Set","status":"Pending"}
+            ];
+            localStorage.setItem('excelCustomerData', JSON.stringify(data));
+            alert('Test data created!');
+            checkStorage();
+        }
+        
+        window.onload = checkStorage;
+    </script>
+</body>
+</html>

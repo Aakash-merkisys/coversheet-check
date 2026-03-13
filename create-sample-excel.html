@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Sample Excel File</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Creating Sample Excel File...</h1>
+    <script>
+        // Create sample customer data with ID, Name, Phone Number
+        const data = [
+            ['ID', 'Name', 'Phone Number', 'Email', 'Address'],
+            ['101', 'John Smith', '+1-555-0101', 'john.smith@email.com', '123 Main St, New York, NY'],
+            ['102', 'Jane Doe', '+1-555-0102', 'jane.doe@email.com', '456 Oak Ave, Los Angeles, CA'],
+            ['103', 'Mike Johnson', '+1-555-0103', 'mike.johnson@email.com', '789 Pine Rd, Chicago, IL'],
+            ['104', 'Sarah Williams', '+1-555-0104', 'sarah.williams@email.com', '321 Elm St, Houston, TX'],
+            ['105', 'David Brown', '+1-555-0105', 'david.brown@email.com', '654 Maple Dr, Phoenix, AZ'],
+            ['106', 'Emily Davis', '+1-555-0106', 'emily.davis@email.com', '987 Cedar Ln, Philadelphia, PA'],
+            ['107', 'Robert Taylor', '+1-555-0107', 'robert.taylor@email.com', '147 Birch Ct, San Antonio, TX'],
+            ['108', 'Lisa Anderson', '+1-555-0108', 'lisa.anderson@email.com', '258 Spruce Way, San Diego, CA'],
+            ['109', 'James Wilson', '+1-555-0109', 'james.wilson@email.com', '369 Willow Pl, Dallas, TX'],
+            ['110', 'Maria Garcia', '+1-555-0110', 'maria.garcia@email.com', '741 Ash Blvd, San Jose, CA']
+        ];
+
+        // Create workbook and worksheet
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Customer Data');
+
+        // Generate and download file
+        XLSX.writeFile(wb, 'sample-customer-data.xlsx');
+
+        document.body.innerHTML = '<h1 style="color: green;">Sample Customer Excel file downloaded successfully!</h1><p>Check your downloads folder for "sample-customer-data.xlsx"</p><p>This file contains 10 customer records with ID, Name, Phone Number, Email, and Address.</p><p><a href="coversheet-generator.html">Go to Coversheet Generator</a></p>';
+    </script>
+</body>
+</html>

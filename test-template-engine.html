@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Engine Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        h2 {
+            color: #2563eb;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 12px;
+        }
+        .status.pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        pre {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .result {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            border-radius: 4px;
+        }
+        button {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            margin-top: 16px;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Template Engine Test Suite</h1>
+    <p style="color: #64748b; margin-bottom: 32px;">Testing the template engine integration with sample Excel data</p>
+
+    <div class="test-section">
+        <h2>Test 1: Basic Placeholder Replacement</h2>
+        <div id="test1"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Multiple Placeholders</h2>
+        <div id="test2"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Dynamic Table Rows</h2>
+        <div id="test3"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Complete Coversheet Generation</h2>
+        <div id="test4"></div>
+        <button onclick="viewGeneratedCoversheet()">View Generated Coversheet</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Template Validation</h2>
+        <div id="test5"></div>
+    </div>
+
+    <script src="template-engine.js"></script>
+    <script>
+        let generatedHTML = '';
+
+        // Test 1: Basic Placeholder Replacement
+        function test1() {
+            const template = '<p>Document: {{Document Title}}</p>';
+            const record = { "Document Title": "CO2 LTOP - DC-F" };
+            const result = fillTemplate(template, record, 'A');
+            const expected = '<p>Document: CO2 LTOP - DC-F</p>';
+            const pass = result === expected;
+
+            document.getElementById('test1').innerHTML = `
+                <span class="status ${pass ? 'pass' : 'fail'}">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+                <pre>Template: ${template}\nRecord: ${JSON.stringify(record, null, 2)}\nResult: ${result}</pre>
+            `;
+        }
+
+        // Test 2: Multiple Placeholders
+        function test2() {
+            const template = '<p>{{Document Title}} - {{Supplier Name}} - Rev {{revision}}</p>';
+            const record = {
+                "Document Title": "CO2 LTOP - DC-F",
+                "Supplier Name": "ABC Engineering"
+            };
+            const result = fillTemplate(template, record, 'A');
+            const expected = '<p>CO2 LTOP - DC-F - ABC Engineering - Rev A</p>';
+            const pass = result === expected;
+
+            document.getElementById('test2').innerHTML = `
+                <span class="status ${pass ? 'pass' : 'fail'}">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+                <pre>Template: ${template}\nRecord: ${JSON.stringify(record, null, 2)}\nResult: ${result}</pre>
+            `;
+        }
+
+        // Test 3: Dynamic Table Rows
+        function test3() {
+            const record = {
+                "Document Title": "CO2 LTOP - DC-F",
+                "Supplier Name": "ABC Engineering",
+                "PO Number": "PO12345",
+                "status": "Pending",
+                "selectedRevisions": ["A", "B"]
+            };
+            const rows = generateDynamicTableRows(record);
+            const pass = rows.includes('Document Title') && 
+                        rows.includes('Supplier Name') && 
+                        rows.includes('PO Number') &&
+                        !rows.includes('status') &&
+                        !rows.includes('selectedRevisions');
+
+            document.getElementById('test3').innerHTML = `
+                <span class="status ${pass ? 'pass' : 'fail'}">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+                <p style="margin-top: 12px; color: #64748b;">Generated ${rows.split('<tr>').length - 1} table rows (system fields excluded)</p>
+                <pre>${rows.substring(0, 500)}...</pre>
+            `;
+        }
+
+        // Test 4: Complete Coversheet Generation
+        function test4() {
+            const record = {
+                "Document Title": "CO2 LTOP - DC-F",
+                "Document ID": "DOC-001",
+                "Supplier Name": "ABC Engineering",
+                "Purchase Order Number": "PO12345",
+                "Package Description": "Gas Processing",
+                "Revision Date": "2024-01-10",
+                "Revision Description": "Issued for Approval",
+                "selectedRevisions": ["A"],
+                "status": "Automated"
+            };
+
+            const template = getCoversheetTemplate();
+            const dynamicRows = generateDynamicTableRows(record);
+            let filledTemplate = template.replace('{{dynamicRows}}', dynamicRows);
+            generatedHTML = fillTemplate(filledTemplate, record, 'A');
+
+            const pass = generatedHTML.includes('CO2 LTOP - DC-F') &&
+                        generatedHTML.includes('ABC Engineering') &&
+                        generatedHTML.includes('PO12345') &&
+                        generatedHTML.includes('REV: A');
+
+            document.getElementById('test4').innerHTML = `
+                <span class="status ${pass ? 'pass' : 'fail'}">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+                <p style="margin-top: 12px; color: #64748b;">Generated complete coversheet HTML (${generatedHTML.length} characters)</p>
+                <div class="result">
+                    <strong>Verification:</strong><br>
+                    ✓ Document Title: ${generatedHTML.includes('CO2 LTOP - DC-F') ? 'Found' : 'Missing'}<br>
+                    ✓ Supplier Name: ${generatedHTML.includes('ABC Engineering') ? 'Found' : 'Missing'}<br>
+                    ✓ PO Number: ${generatedHTML.includes('PO12345') ? 'Found' : 'Missing'}<br>
+                    ✓ Revision: ${generatedHTML.includes('REV: A') ? 'Found' : 'Missing'}
+                </div>
+            `;
+        }
+
+        // Test 5: Template Validation
+        function test5() {
+            const template = '<p>{{Document Title}} - {{Supplier Name}} - {{NonExistent}}</p>';
+            const record = {
+                "Document Title": "CO2 LTOP - DC-F",
+                "Supplier Name": "ABC Engineering"
+            };
+            const validation = validateTemplate(template, record);
+            const pass = !validation.valid && validation.missingFields.includes('NonExistent');
+
+            document.getElementById('test5').innerHTML = `
+                <span class="status ${pass ? 'pass' : 'fail'}">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+                <pre>Validation Result: ${JSON.stringify(validation, null, 2)}</pre>
+            `;
+        }
+
+        // View generated coversheet
+        function viewGeneratedCoversheet() {
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(generatedHTML);
+            newWindow.document.close();
+        }
+
+        // Run all tests
+        window.onload = function() {
+            test1();
+            test2();
+            test3();
+            test4();
+            test5();
+        };
+    </script>
+</body>
+</html>

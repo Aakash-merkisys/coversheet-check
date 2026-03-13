@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Customer Directory - Customer Management</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👥</text></svg>"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css?v=2.0"/>
+    <link rel="stylesheet" href="premium-styles.css?v=2.0"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        // Wait for Tailwind to load before configuring
+        window.addEventListener('load', function() {
+            if (typeof tailwind !== 'undefined') {
+                tailwind.config = {
+                    darkMode: "class",
+                    theme: {
+                        extend: {
+                            colors: {
+                                "primary": "#2563eb",
+                                "emerald-custom": "#059669",
+                                "background-light": "#f8faff",
+                                "background-dark": "#0f172a",
+                            },
+                            fontFamily: {
+                                "sans": ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Arial", "sans-serif"]
+                            },
+                            borderRadius: {
+                                "DEFAULT": "0.25rem",
+                                "lg": "0.5rem",
+                                "xl": "0.75rem",
+                                "full": "9999px"
+                            },
+                        },
+                    },
+                }
+            }
+        });
+    </script>
+</head>
+<body class="font-sans bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 mesh-gradient min-h-screen">
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Top Navigation -->
+        <header class="premium-header border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-[100] w-full">
+            <div class="w-full px-6 lg:px-10 py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 text-primary">
+                    <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white shrink-0">
+                        <span class="material-symbols-outlined">analytics</span>
+                    </div>
+                    <h2 class="text-slate-900 dark:text-white text-xl font-semibold leading-tight tracking-tight hidden sm:block">Customer Portal</h2>
+                </div>
+                <div class="flex flex-1 justify-end gap-6 items-center min-w-0">
+                    <nav class="hidden md:flex items-center gap-6 shrink overflow-hidden">
+                        <!-- Dashboard temporarily disabled -->
+                        <!-- <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors shrink-0" href="index.html">Dashboard</a> -->
+                        <a class="text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors shrink-0" href="clients.html" style="color: #374151;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#374151'">Clients</a>
+                        <a class="text-sm shrink-0" href="customers.html" style="color: #2563eb; font-weight: 600; border-bottom: 2px solid #2563eb; padding-bottom: 4px;">Customers</a>
+                        <a class="text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors shrink-0" href="automations.html" style="color: #374151;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#374151'">Automation</a>
+                        <a class="text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors shrink-0" href="coversheet-generator.html" style="color: #374151;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#374151'">Coversheet Generator</a>
+                    </nav>
+                    <div class="flex items-center gap-3 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
+                        <div data-user-avatar class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border-2 border-primary/20 shrink-0" style='background-image: url("https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff");'></div>
+                        <button onclick="handleLogout()" title="Logout" class="logout-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-500 hover:text-white transition-all text-sm font-medium group" style="position: relative; overflow: hidden;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition-all duration-300 group-hover:rotate-12 group-hover:scale-110">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span class="hidden sm:inline transition-all duration-300">Logout</span>
+                        </button>
+                        <style>
+                            .logout-btn {
+                                transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                                background: linear-gradient(135deg, transparent 0%, transparent 100%);
+                            }
+                            .logout-btn:hover {
+                                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                                transform: scale(1.05) rotate(-2deg);
+                                box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+                            }
+                            .logout-btn:active {
+                                transform: scale(0.95) rotate(0deg);
+                                box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+                            }
+                            .logout-btn::after {
+                                content: '';
+                                position: absolute;
+                                top: 50%;
+                                left: -100%;
+                                width: 100%;
+                                height: 100%;
+                                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                                transform: translateY(-50%);
+                                transition: left 0.5s;
+                            }
+                            .logout-btn:hover::after {
+                                left: 100%;
+                            }
+                            .logout-btn svg,
+                            .logout-btn span {
+                                position: relative;
+                                z-index: 1;
+                            }
+                            @keyframes shake {
+                                0%, 100% { transform: translateX(0); }
+                                25% { transform: translateX(-3px); }
+                                75% { transform: translateX(3px); }
+                            }
+                            .logout-btn:hover svg {
+                                animation: shake 0.5s ease-in-out;
+                            }
+                        </style>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 w-full py-6 space-y-6">
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 animate-fade-in-up px-6 lg:px-10">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Customer Directory</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">Manage and track your client accounts and their documents.</p>
+                </div>
+                <div class="flex gap-3 flex-wrap">
+                    <div class="relative group">
+                        <!-- <button onclick="exportCustomers('csv')" class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium btn-premium-outline transition-all active:scale-95">
+                            <span class="material-symbols-outlined mr-2 text-[20px]">file_download</span> Export
+                        </button> -->
+                        <!-- Export Dropdown (Optional Enhancement) -->
+                        <div class="hidden group-hover:block absolute right-0 mt-1 w-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[70] py-2 animate-slide-down">
+                            <button onclick="exportCustomers('csv')" class="w-full text-left px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-slate-400">csv</span> Export as CSV
+                            </button>
+                            <button onclick="exportCustomers('excel')" class="w-full text-left px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-slate-400">table_view</span> Export as Excel
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="window.location.href='add-customer.html'" class="flex items-center justify-center rounded-xl px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium btn-premium-outline transition-all hover:scale-105 active:scale-95">
+                        <span class="material-symbols-outlined mr-2 text-[20px]">person_add</span> Add New Customer
+                    </button>
+                    <button onclick="openCustomerModal()" class="flex items-center justify-center rounded-xl px-6 py-2.5 text-white text-sm font-medium transition-all hover:scale-105 active:scale-95 btn-premium-primary btn-glow-primary">
+                        <span class="material-symbols-outlined mr-2 text-[20px]">add</span> Add Customer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Customer DataTable Container -->
+            <div class="premium-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg rounded-[14px] animate-fade-in-up stagger-1 mx-6 lg:mx-10">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 flex-1">
+                         <div class="relative flex-1 max-w-sm">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+                            <input id="customerSearchMain" oninput="filterCustomers()" type="text" placeholder="Search customers..." class="premium-input w-full pl-10 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"/>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="text-sm font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Status:</label>
+                            <select id="statusFilterSelect" onchange="setStatusFilter(this.value)" class="premium-input px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all cursor-pointer h-[38px] premium-select">
+                                <option value="All">All Status</option>
+                                <option value="Approve">Approved</option>
+                                <option value="In progress">In-Progress</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="premium-table w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                                <th class="px-4 py-3 text-left">Customer Name</th>
+                                <th class="px-4 py-3 text-left">PO Number</th>
+                                <th class="px-4 py-3 text-left">SO Number</th>
+                                <th class="px-4 py-3 text-left">No. of Documents</th>
+                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Dynamic rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination UI -->
+                <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/30 dark:bg-slate-800/20">
+                    <p class="text-sm text-slate-500 dark:text-slate-400" id="paginationInfo">
+                        Showing <span class="font-medium text-slate-900 dark:text-white">1</span> to <span class="font-medium text-slate-900 dark:text-white">10</span> of <span class="font-medium text-slate-900 dark:text-white">50</span> customers
+                    </p>
+                    <div class="flex items-center gap-2" id="paginationButtons">
+                        <button class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50" disabled>
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        <button class="size-9 rounded-lg bg-primary text-white text-sm font-medium transition-all shadow-lg shadow-primary/20">1</button>
+                        <button class="size-9 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">2</button>
+                        <button class="size-9 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">3</button>
+                        <button class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden file input for Upload Demo -->
+    <input type="file" id="demoUploadInput" class="hidden" onchange="showCustomModal({title: 'Action Completed', message: 'File uploaded successfully (Demo only)', type: 'success'})"/>
+
+    <!-- Reusable Modals (Copy from index.html if needed for consistency) -->
+    <!-- (Skipping modal code for now to keep focus on the table, but I should probably include the Add Customer modal) -->
+    
+    <!-- Add Customer Modal -->
+    <div id="customerModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-800">
+            <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Add New Customer</h3>
+                    <p class="text-sm text-slate-500 mt-1">Fill in the customer details below</p>
+                </div>
+                <button onclick="closeCustomerModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined text-[28px]">close</span>
+                </button>
+            </div>
+            <form id="customerForm" onsubmit="handleAddCustomer(event)" class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Client Name - Required -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Client Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="clientName" required class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter client name"/>
+                    </div>
+
+                    <!-- Purchase Order - Optional -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Purchase Order
+                        </label>
+                        <input type="text" id="purchaseOrder" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="PO-00000"/>
+                    </div>
+
+                    <!-- Sales Order - Optional -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Sales Order
+                        </label>
+                        <input type="text" id="salesOrder" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="SO-00000"/>
+                    </div>
+
+                    <!-- No. of Documents - Integer -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            No. of Documents
+                        </label>
+                        <input type="number" id="numDocuments" min="0" step="1" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="0"/>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeCustomerModal()" class="btn-premium-outline px-6 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
+                    <button type="submit" class="btn-premium-primary px-6 py-2.5 rounded-lg text-white font-semibold transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">check</span>
+                        Add Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Documents Modal -->
+    <div id="uploadModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[250] flex items-center justify-center p-4 modal-backdrop-blur">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl w-full max-w-[500px] border border-slate-200 dark:border-slate-800 rounded-xl">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="size-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-emerald-600 text-[24px]">table_chart</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Upload Excel File</h3>
+                        <p class="text-xs text-slate-500">Import customer data from spreadsheet</p>
+                    </div>
+                </div>
+                <button onclick="closeUploadModal()" class="modal-close-btn p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-all">
+                    <span class="material-symbols-outlined text-[24px]">close</span>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="px-6 py-6">
+                <!-- Excel Upload Section -->
+                <div class="space-y-2">
+                    <div class="relative">
+                        <input type="file" id="excelUploadInput" accept=".xlsx,.csv,.xls" class="hidden" onchange="updateUploadLabel('excelUploadInput', 'excelFileName', 'Choose Excel File (.xlsx, .csv, .xls)')"/>
+                        <label for="excelUploadInput" class="upload-zone flex items-center justify-center w-full px-6 py-10 rounded-lg cursor-pointer transition-all group border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 bg-slate-50 dark:bg-slate-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/10">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-[48px] text-emerald-500 group-hover:text-emerald-600 transition-colors mb-3 block">cloud_upload</span>
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1" id="excelFileName">Choose Excel File</p>
+                                <p class="text-xs text-slate-500">or drag and drop here</p>
+                                <p class="text-xs text-slate-400 mt-2">Supported: .xlsx, .csv, .xls</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex justify-end gap-3">
+                <button onclick="closeUploadModal()" class="px-5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all text-sm">
+                    Cancel
+                </button>
+                <button onclick="handleImport()" class="btn-ripple px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-lg shadow-emerald-600/20 hover:scale-105 active:scale-95 flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined text-[18px]">upload</span>
+                    Import Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div id="editCustomerModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-lg w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden animate-slide-up">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Edit Customer</h3>
+                    <p class="text-sm text-slate-500 mt-1">Update customer information</p>
+                </div>
+                <button onclick="closeEditCustomerModal()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <form onsubmit="saveCustomerEdit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editCustomerId" />
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Full Name</label>
+                    <input type="text" id="editCustomerName" required class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none" />
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                    <input type="email" id="editCustomerEmail" required class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none" />
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Phone Number</label>
+                    <input type="text" id="editCustomerPhone" required class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none" />
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</label>
+                    <select id="editCustomerStatus" class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none">
+                        <option>Approve</option>
+                        <option>In progress</option>
+                        <option>Pending</option>
+                    </select>
+                </div>
+
+                <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+                    <button type="button" onclick="closeEditCustomerModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all">Cancel</button>
+                    <button type="submit" class="px-8 py-2.5 rounded-xl bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick View Modal -->
+    <div id="quickViewModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden animate-slide-up">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div id="qv-avatar" class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-xl"></div>
+                    <div>
+                        <h3 id="qv-name" class="text-xl font-bold text-slate-900 dark:text-white">Customer Name</h3>
+                        <p id="qv-id" class="text-xs font-medium text-slate-500 uppercase tracking-widest">ID: #00000</p>
+                    </div>
+                </div>
+                <button onclick="closeQuickView()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="detail-item">
+                        <span class="detail-label">Email Address</span>
+                        <span id="qv-email" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Phone Number</span>
+                        <span id="qv-phone" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <div id="qv-status-container" class="mt-1"></div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created Date</span>
+                        <span id="qv-date" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item md:col-span-2">
+                        <span class="detail-label">Documents Overview</span>
+                        <div id="qv-docs-container" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex justify-center">
+                <button onclick="closeQuickView()" class="px-8 py-2.5 rounded-xl bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=2.5"></script>
+    <script>
+        // Initialize data only for this page
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initCustomersPage === 'function') {
+                initCustomersPage();
+            }
+        });
+
+        function handleLogout() {
+            document.getElementById('logoutModal').classList.remove('hidden');
+        }
+    </script>
+
+    <!-- Custom Logout Modal -->
+    <div id="logoutModal" class="logout-modal hidden">
+        <div class="logout-modal-overlay" onclick="closeLogoutModal()"></div>
+        <div class="logout-modal-content">
+            <div class="logout-modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </div>
+            <h3 class="logout-modal-title">Confirm Logout</h3>
+            <p class="logout-modal-message">Are you sure you want to log out?</p>
+            <div class="logout-modal-actions">
+                <button id="cancelLogout" class="logout-modal-btn logout-modal-btn-cancel" onclick="closeLogoutModal()">
+                    <span>Cancel</span>
+                </button>
+                <button id="confirmLogout" class="logout-modal-btn logout-modal-btn-confirm" onclick="confirmLogout()">
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .logout-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .logout-modal.hidden {
+            display: none;
+        }
+        .logout-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+        .logout-modal-content {
+            position: relative;
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            animation: scaleIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10000;
+        }
+        .logout-modal-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounceIn 0.5s ease;
+        }
+        .logout-modal-icon svg {
+            color: #ef4444;
+            animation: shake 0.5s ease 0.3s;
+        }
+        .logout-modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+        .logout-modal-message {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .logout-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .logout-modal-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+        }
+        .logout-modal-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .logout-modal-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .logout-modal-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        .logout-modal-btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .logout-modal-btn-cancel:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .logout-modal-btn-confirm {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        .logout-modal-btn-confirm:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+        .logout-modal-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+
+    <script>
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.add('hidden');
+        }
+
+        function confirmLogout() {
+            window.location.href = 'login.html';
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLogoutModal();
+            }
+        });
+    </script>
+</body>
+</html>

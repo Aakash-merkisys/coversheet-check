@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Persistence Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        h2 {
+            color: #2563eb;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 12px;
+        }
+        .status.pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        button {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button.secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        button.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        pre {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .success-box {
+            background: #d1fae5;
+            border: 1px solid #6ee7b7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .nav-links a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .nav-links a:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Data Persistence Test Suite</h1>
+    <p style="color: #64748b; margin-bottom: 32px;">Testing LocalStorage persistence between Coversheet Generator and Automation pages</p>
+
+    <div class="test-section">
+        <h2>Test 1: Check LocalStorage Data</h2>
+        <div id="test1"></div>
+        <button onclick="runTest1()">Run Test</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Validate Data Structure</h2>
+        <div id="test2"></div>
+        <button onclick="runTest2()">Run Test</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Simulate Data Save</h2>
+        <div id="test3"></div>
+        <button onclick="runTest3()">Save Sample Data</button>
+        <button class="secondary" onclick="runTest1()">Verify Saved</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Simulate Revision Update</h2>
+        <div id="test4"></div>
+        <button onclick="runTest4()">Update Revisions</button>
+        <button class="secondary" onclick="runTest1()">Verify Updated</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Data Size Check</h2>
+        <div id="test5"></div>
+        <button onclick="runTest5()">Check Size</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Navigation Test</h2>
+        <p style="color: #64748b; margin-bottom: 12px;">Test data persistence by navigating between pages:</p>
+        <div class="nav-links">
+            <a href="coversheet-generator.html" target="_blank">→ Coversheet Generator</a>
+            <a href="automations.html" target="_blank">→ Automation Dashboard</a>
+        </div>
+        <div class="info-box" style="margin-top: 16px;">
+            <strong>Test Steps:</strong><br>
+            1. Save sample data using Test 3<br>
+            2. Open Coversheet Generator (should auto-load data)<br>
+            3. Open Automation Dashboard (should show data)<br>
+            4. Return here and verify data still exists
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Clear Data</h2>
+        <p style="color: #64748b; margin-bottom: 12px;">Remove all stored Excel data from LocalStorage</p>
+        <button class="danger" onclick="clearData()">Clear All Data</button>
+        <button class="secondary" onclick="runTest1()">Verify Cleared</button>
+    </div>
+
+    <script>
+        // Test 1: Check if data exists in LocalStorage
+        function runTest1() {
+            const data = localStorage.getItem('excelCustomerData');
+            const resultDiv = document.getElementById('test1');
+            
+            if (!data) {
+                resultDiv.innerHTML = `
+                    <span class="status fail">✗ NO DATA</span>
+                    <div class="warning-box">
+                        <strong>No data found in LocalStorage</strong><br>
+                        Key: excelCustomerData<br>
+                        Status: Empty<br><br>
+                        <em>Upload an Excel file or run Test 3 to save sample data</em>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(data);
+                const recordCount = Array.isArray(parsed) ? parsed.length : 0;
+                const sampleRecord = parsed[0] || {};
+                const fields = Object.keys(sampleRecord);
+
+                resultDiv.innerHTML = `
+                    <span class="status pass">✓ DATA FOUND</span>
+                    <div class="success-box">
+                        <strong>LocalStorage Data Exists</strong><br>
+                        Records: ${recordCount}<br>
+                        Fields: ${fields.length}<br>
+                        Sample Fields: ${fields.slice(0, 5).join(', ')}${fields.length > 5 ? '...' : ''}
+                    </div>
+                    <pre>${JSON.stringify(parsed[0], null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="status fail">✗ ERROR</span>
+                    <div class="warning-box">
+                        <strong>Data exists but cannot be parsed</strong><br>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Test 2: Validate data structure
+        function runTest2() {
+            const data = localStorage.getItem('excelCustomerData');
+            const resultDiv = document.getElementById('test2');
+            
+            if (!data) {
+                resultDiv.innerHTML = `<span class="status fail">✗ NO DATA</span><p>No data to validate</p>`;
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(data);
+                const issues = [];
+
+                // Check if array
+                if (!Array.isArray(parsed)) {
+                    issues.push('Data is not an array');
+                }
+
+                // Check if not empty
+                if (parsed.length === 0) {
+                    issues.push('Data array is empty');
+                }
+
+                // Check first record structure
+                const firstRecord = parsed[0];
+                if (!firstRecord || typeof firstRecord !== 'object') {
+                    issues.push('First record is not an object');
+                }
+
+                // Check for system fields
+                const hasSelectedRevisions = firstRecord.hasOwnProperty('selectedRevisions');
+                const hasStatus = firstRecord.hasOwnProperty('status');
+
+                if (issues.length === 0) {
+                    resultDiv.innerHTML = `
+                        <span class="status pass">✓ VALID</span>
+                        <div class="success-box">
+                            <strong>Data structure is valid</strong><br>
+                            ✓ Is array: Yes<br>
+                            ✓ Record count: ${parsed.length}<br>
+                            ✓ Has selectedRevisions: ${hasSelectedRevisions ? 'Yes' : 'No'}<br>
+                            ✓ Has status: ${hasStatus ? 'Yes' : 'No'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <span class="status fail">✗ INVALID</span>
+                        <div class="warning-box">
+                            <strong>Data structure issues:</strong><br>
+                            ${issues.map(i => `• ${i}`).join('<br>')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="status fail">✗ ERROR</span>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Test 3: Save sample data
+        function runTest3() {
+            const sampleData = [
+                {
+                    "Document Title": "CO2 LTOP - DC-F",
+                    "Document ID": "DOC-001",
+                    "Supplier Name": "ABC Engineering",
+                    "PO Number": "PO12345",
+                    "Revision Date": "2024-01-10",
+                    "selectedRevisions": [],
+                    "revision": "Not Set",
+                    "status": "Pending"
+                },
+                {
+                    "Document Title": "Gas Processing Unit",
+                    "Document ID": "DOC-002",
+                    "Supplier Name": "XYZ Corporation",
+                    "PO Number": "PO67890",
+                    "Revision Date": "2024-02-15",
+                    "selectedRevisions": [],
+                    "revision": "Not Set",
+                    "status": "Pending"
+                },
+                {
+                    "Document Title": "Pressure Vessel Design",
+                    "Document ID": "DOC-003",
+                    "Supplier Name": "Tech Solutions Inc",
+                    "PO Number": "PO11111",
+                    "Revision Date": "2024-03-01",
+                    "selectedRevisions": [],
+                    "revision": "Not Set",
+                    "status": "Pending"
+                }
+            ];
+
+            localStorage.setItem('excelCustomerData', JSON.stringify(sampleData));
+
+            const resultDiv = document.getElementById('test3');
+            resultDiv.innerHTML = `
+                <span class="status pass">✓ SAVED</span>
+                <div class="success-box">
+                    <strong>Sample data saved to LocalStorage</strong><br>
+                    Records: ${sampleData.length}<br>
+                    Key: excelCustomerData<br><br>
+                    <em>Now navigate to Coversheet Generator or Automation Dashboard to verify auto-load</em>
+                </div>
+            `;
+        }
+
+        // Test 4: Simulate revision update
+        function runTest4() {
+            const data = localStorage.getItem('excelCustomerData');
+            const resultDiv = document.getElementById('test4');
+            
+            if (!data) {
+                resultDiv.innerHTML = `<span class="status fail">✗ NO DATA</span><p>Save sample data first (Test 3)</p>`;
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(data);
+                
+                // Update first record with revisions
+                if (parsed.length > 0) {
+                    parsed[0].selectedRevisions = ['A', 'B'];
+                    parsed[0].revision = 'A,B';
+                    parsed[0].status = 'Automated';
+                    parsed[0].automatedAt = new Date().toISOString();
+                }
+
+                // Update second record with revisions
+                if (parsed.length > 1) {
+                    parsed[1].selectedRevisions = ['0', '1', '2'];
+                    parsed[1].revision = '0,1,2';
+                    parsed[1].status = 'Automated';
+                    parsed[1].automatedAt = new Date().toISOString();
+                }
+
+                localStorage.setItem('excelCustomerData', JSON.stringify(parsed));
+
+                resultDiv.innerHTML = `
+                    <span class="status pass">✓ UPDATED</span>
+                    <div class="success-box">
+                        <strong>Revisions updated successfully</strong><br>
+                        Record 1: Revisions A, B<br>
+                        Record 2: Revisions 0, 1, 2<br>
+                        Status: Automated<br><br>
+                        <em>Navigate to Coversheet Generator to verify updated data</em>
+                    </div>
+                    <pre>${JSON.stringify(parsed[0], null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="status fail">✗ ERROR</span>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Test 5: Check data size
+        function runTest5() {
+            const data = localStorage.getItem('excelCustomerData');
+            const resultDiv = document.getElementById('test5');
+            
+            if (!data) {
+                resultDiv.innerHTML = `<span class="status fail">✗ NO DATA</span><p>No data to measure</p>`;
+                return;
+            }
+
+            const sizeInBytes = new Blob([data]).size;
+            const sizeInKB = (sizeInBytes / 1024).toFixed(2);
+            const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+
+            const parsed = JSON.parse(data);
+            const recordCount = parsed.length;
+            const avgSizePerRecord = (sizeInBytes / recordCount).toFixed(0);
+
+            const maxSize = 5 * 1024 * 1024; // 5MB typical limit
+            const percentUsed = ((sizeInBytes / maxSize) * 100).toFixed(2);
+
+            resultDiv.innerHTML = `
+                <span class="status ${sizeInBytes < maxSize ? 'pass' : 'fail'}">
+                    ${sizeInBytes < maxSize ? '✓ OK' : '✗ TOO LARGE'}
+                </span>
+                <div class="${sizeInBytes < maxSize ? 'success-box' : 'warning-box'}">
+                    <strong>Data Size Analysis</strong><br>
+                    Total Size: ${sizeInKB} KB (${sizeInMB} MB)<br>
+                    Records: ${recordCount}<br>
+                    Avg per Record: ${avgSizePerRecord} bytes<br>
+                    Storage Used: ${percentUsed}% of typical 5MB limit<br><br>
+                    ${sizeInBytes < maxSize 
+                        ? '<em>✓ Size is within safe limits</em>' 
+                        : '<em>⚠️ Warning: Approaching storage limit</em>'}
+                </div>
+            `;
+        }
+
+        // Clear all data
+        function clearData() {
+            if (confirm('Are you sure you want to clear all Excel data from LocalStorage?')) {
+                localStorage.removeItem('excelCustomerData');
+                alert('✓ Data cleared successfully');
+                runTest1();
+            }
+        }
+
+        // Auto-run Test 1 on page load
+        window.onload = function() {
+            runTest1();
+        };
+    </script>
+</body>
+</html>

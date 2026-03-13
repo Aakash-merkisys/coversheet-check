@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Flow Test - Customer Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-box {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+        .status-success {
+            background: #d1fae5;
+            border: 2px solid #6ee7b7;
+            color: #065f46;
+        }
+        .status-error {
+            background: #fee2e2;
+            border: 2px solid #fca5a5;
+            color: #991b1b;
+        }
+        .status-warning {
+            background: #fef3c7;
+            border: 2px solid #fcd34d;
+            color: #92400e;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Data Flow Test</h1>
+            <p class="text-gray-600 mb-6">Verify LocalStorage data flow between pages</p>
+
+            <!-- Test Results -->
+            <div id="testResults"></div>
+
+            <!-- Actions -->
+            <div class="mt-8 flex gap-4">
+                <button onclick="runTests()" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                    🔄 Run Tests
+                </button>
+                <button onclick="clearData()" class="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition">
+                    🗑️ Clear Data
+                </button>
+                <button onclick="createTestData()" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+                    ➕ Create Test Data
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">Quick Navigation</h3>
+                <div class="flex gap-4">
+                    <a href="coversheet-generator.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                        📄 Coversheet Generator
+                    </a>
+                    <a href="automations.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                        ⚡ Automation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function runTests() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h2 class="text-xl font-bold mb-4">Test Results</h2>';
+
+            // Test 1: LocalStorage Available
+            const test1 = testLocalStorageAvailable();
+            results.innerHTML += createTestResult('Test 1: LocalStorage Available', test1.pass, test1.message, test1.details);
+
+            // Test 2: Data Exists
+            const test2 = testDataExists();
+            results.innerHTML += createTestResult('Test 2: Customer Data Exists', test2.pass, test2.message, test2.details);
+
+            // Test 3: Data Valid
+            const test3 = testDataValid();
+            results.innerHTML += createTestResult('Test 3: Data Structure Valid', test3.pass, test3.message, test3.details);
+
+            // Test 4: Record Count
+            const test4 = testRecordCount();
+            results.innerHTML += createTestResult('Test 4: Record Count', test4.pass, test4.message, test4.details);
+
+            // Test 5: Required Fields
+            const test5 = testRequiredFields();
+            results.innerHTML += createTestResult('Test 5: Required Fields Present', test5.pass, test5.message, test5.details);
+        }
+
+        function testLocalStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return {
+                    pass: true,
+                    message: 'LocalStorage is available and working',
+                    details: 'Browser supports LocalStorage API'
+                };
+            } catch (e) {
+                return {
+                    pass: false,
+                    message: 'LocalStorage is NOT available',
+                    details: 'Error: ' + e.message
+                };
+            }
+        }
+
+        function testDataExists() {
+            const data = localStorage.getItem('excelCustomerData');
+            if (data) {
+                return {
+                    pass: true,
+                    message: 'Customer data found in LocalStorage',
+                    details: `Key: excelCustomerData\nSize: ${data.length} characters`
+                };
+            } else {
+                return {
+                    pass: false,
+                    message: 'No customer data found',
+                    details: 'Upload an Excel file in Coversheet Generator first'
+                };
+            }
+        }
+
+        function testDataValid() {
+            const data = localStorage.getItem('excelCustomerData');
+            if (!data) {
+                return {
+                    pass: false,
+                    message: 'No data to validate',
+                    details: 'Upload Excel file first'
+                };
+            }
+
+            try {
+                const parsed = JSON.parse(data);
+                if (Array.isArray(parsed)) {
+                    return {
+                        pass: true,
+                        message: 'Data is valid JSON array',
+                        details: `Type: Array\nLength: ${parsed.length}`
+                    };
+                } else {
+                    return {
+                        pass: false,
+                        message: 'Data is not an array',
+                        details: `Type: ${typeof parsed}`
+                    };
+                }
+            } catch (e) {
+                return {
+                    pass: false,
+                    message: 'Data is not valid JSON',
+                    details: 'Error: ' + e.message
+                };
+            }
+        }
+
+        function testRecordCount() {
+            try {
+                const data = JSON.parse(localStorage.getItem('excelCustomerData'));
+                if (!data) {
+                    return {
+                        pass: false,
+                        message: 'No data to count',
+                        details: 'Upload Excel file first'
+                    };
+                }
+
+                const count = data.length;
+                return {
+                    pass: count > 0,
+                    message: count > 0 ? `Found ${count} customer records` : 'No records found',
+                    details: count > 0 ? `Total records: ${count}` : 'Array is empty'
+                };
+            } catch (e) {
+                return {
+                    pass: false,
+                    message: 'Error counting records',
+                    details: 'Error: ' + e.message
+                };
+            }
+        }
+
+        function testRequiredFields() {
+            try {
+                const data = JSON.parse(localStorage.getItem('excelCustomerData'));
+                if (!data || data.length === 0) {
+                    return {
+                        pass: false,
+                        message: 'No data to check',
+                        details: 'Upload Excel file first'
+                    };
+                }
+
+                const firstRecord = data[0];
+                const hasRevision = 'revision' in firstRecord;
+                const hasStatus = 'status' in firstRecord;
+                
+                const fields = Object.keys(firstRecord);
+                const details = `Fields found: ${fields.join(', ')}\nrevision: ${hasRevision ? '✓' : '✗'}\nstatus: ${hasStatus ? '✓' : '✗'}`;
+
+                if (hasRevision && hasStatus) {
+                    return {
+                        pass: true,
+                        message: 'All required fields present',
+                        details: details
+                    };
+                } else {
+                    return {
+                        pass: false,
+                        message: 'Missing required fields',
+                        details: details
+                    };
+                }
+            } catch (e) {
+                return {
+                    pass: false,
+                    message: 'Error checking fields',
+                    details: 'Error: ' + e.message
+                };
+            }
+        }
+
+        function createTestResult(title, pass, message, details) {
+            const statusClass = pass ? 'status-success' : 'status-error';
+            const icon = pass ? '✅' : '❌';
+            
+            return `
+                <div class="status-box ${statusClass}">
+                    <h3 class="font-bold text-lg mb-2">${icon} ${title}</h3>
+                    <p class="mb-2">${message}</p>
+                    <div class="code-block">${details}</div>
+                </div>
+            `;
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear all customer data from LocalStorage?')) {
+                localStorage.removeItem('excelCustomerData');
+                alert('Customer data cleared!');
+                runTests();
+            }
+        }
+
+        function createTestData() {
+            const testData = [
+                {
+                    "ID": "101",
+                    "Name": "Test User 1",
+                    "Phone Number": "+1-555-0101",
+                    "Email": "test1@example.com",
+                    "revision": "Not Set",
+                    "status": "Pending"
+                },
+                {
+                    "ID": "102",
+                    "Name": "Test User 2",
+                    "Phone Number": "+1-555-0102",
+                    "Email": "test2@example.com",
+                    "revision": "0",
+                    "status": "Automated",
+                    "automatedAt": new Date().toISOString()
+                },
+                {
+                    "ID": "103",
+                    "Name": "Test User 3",
+                    "Phone Number": "+1-555-0103",
+                    "Email": "test3@example.com",
+                    "revision": "1",
+                    "status": "Automated",
+                    "automatedAt": new Date().toISOString()
+                }
+            ];
+
+            localStorage.setItem('excelCustomerData', JSON.stringify(testData));
+            alert('Test data created! (3 records)');
+            runTests();
+        }
+
+        // Run tests on page load
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
