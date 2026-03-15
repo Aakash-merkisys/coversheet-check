@@ -5,6 +5,8 @@ const XLSX = require('xlsx');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const JSZip = require('jszip');
+const { buildCoversheetDocx } = require('./docx-generator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -161,6 +163,70 @@ app.post('/api/upload-excel', upload.single('excelFile'), (req, res) => {
             success: false,
             message: 'Error processing Excel file: ' + error.message
         });
+    }
+});
+
+// Generate DOCX coversheet(s) from JSON records
+// POST /api/generate-docx
+// Body: { records: [{...}, ...], revision: "A" }
+// Returns: single .docx (1 record) or .zip (multiple records)
+app.post('/api/generate-docx', express.json({ limit: '10mb' }), async (req, res) => {
+    console.log('📝 Received DOCX generation request');
+
+    try {
+        const { records, revision } = req.body;
+
+        if (!records || !Array.isArray(records) || records.length === 0) {
+            return res.status(400).json({ success: false, message: 'No records provided.' });
+        }
+
+        const rev = revision || 'A';
+
+        if (records.length === 1) {
+            // Single record → return one .docx
+            const buf = await buildCoversheetDocx(records[0], rev);
+            const record = records[0];
+            const id = record['ID'] || record['id'] || record['Customer ID'] || '';
+            const name = record['Name'] || record['Customer Name'] || record['name'] || '';
+            const safeName = (id || name || 'coversheet')
+                .toString().toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 40);
+            const filename = `coversheet_${safeName}_REV_${rev}.docx`;
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            return res.send(buf);
+        }
+
+        // Multiple records → build ZIP
+        const zip = new JSZip();
+
+        for (let i = 0; i < records.length; i++) {
+            const record = records[i];
+            const revisions = Array.isArray(record.selectedRevisions) && record.selectedRevisions.length > 0
+                ? record.selectedRevisions
+                : [rev];
+
+            const id = record['ID'] || record['id'] || record['Customer ID'] || '';
+            const name = record['Name'] || record['Customer Name'] || record['name'] || '';
+            const safeName = (id || name || `record_${i + 1}`)
+                .toString().toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 40);
+
+            for (const r of revisions) {
+                const buf = await buildCoversheetDocx(record, r);
+                zip.file(`coversheet_${safeName}_REV_${r}.docx`, buf);
+            }
+        }
+
+        const zipBuf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+        const zipName = `coversheets_${Date.now()}.zip`;
+
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
+        return res.send(zipBuf);
+
+    } catch (err) {
+        console.error('❌ DOCX generation error:', err);
+        res.status(500).json({ success: false, message: 'Failed to generate DOCX: ' + err.message });
     }
 });
 

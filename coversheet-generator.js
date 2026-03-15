@@ -257,7 +257,7 @@ function displayDataPreview() {
     previewSection.classList.remove('hidden');
 }
 
-// Generate coversheets with per-record revisions (multiple coversheets per customer)
+// Generate coversheets as Word documents (.docx) via backend API
 async function generateCoversheets() {
     if (excelData.length === 0) {
         showToast('No data to generate coversheets', 'error');
@@ -270,141 +270,73 @@ async function generateCoversheets() {
         const storedData = localStorage.getItem('excelCustomerData');
         if (storedData) {
             customerData = JSON.parse(storedData);
-            console.log('📊 Loaded customer data from LocalStorage:', customerData.length, 'records');
-            console.log('Sample customer record:', customerData[0]);
-        } else {
-            console.warn('⚠️ No customer data found in LocalStorage');
         }
     } catch (error) {
         console.error('Error loading customer data:', error);
     }
 
-    // Show progress section
-    document.getElementById('progressSection').classList.remove('hidden');
-    document.getElementById('dataPreviewSection').classList.add('hidden');
-
-    const zip = new JSZip();
-    let totalCoversheets = 0;
-    let skippedCustomers = [];
-
-    // Calculate total coversheets to generate
-    for (let i = 0; i < excelData.length; i++) {
-        const revisions = getCustomerRevisions(customerData[i]);
-        console.log(`📋 Customer ${i + 1} has ${revisions.length} revisions:`, revisions);
-
-        if (revisions.length > 0) {
-            totalCoversheets += revisions.length;
-        } else {
-            skippedCustomers.push(i + 1);
-            console.warn(`⚠️ Customer ${i + 1} has no selected revisions - will be skipped`);
-        }
-    }
-
-    console.log(`📈 Total coversheets to generate: ${totalCoversheets}`);
-    console.log(`⏭️ Customers to skip: ${skippedCustomers.length}`);
-
-    if (totalCoversheets === 0) {
-        showToast('No revisions selected. Please select revisions in the Automation Dashboard first.', 'error');
-        document.getElementById('progressSection').classList.add('hidden');
-        document.getElementById('dataPreviewSection').classList.remove('hidden');
-        return;
-    }
-
-    let currentCoversheet = 0;
-
-    // Generate coversheets for each customer and their selected revisions
+    // Build flat records array with selectedRevisions attached
+    const records = [];
     for (let i = 0; i < excelData.length; i++) {
         const row = excelData[i];
         const rowData = {};
+        excelHeaders.forEach((header, idx) => { rowData[header] = row[idx] || ''; });
 
-        // Map row data to headers
-        excelHeaders.forEach((header, index) => {
-            rowData[header] = row[index] || '';
-        });
-
-        // Get customer revisions
         const revisions = getCustomerRevisions(customerData[i]);
-        console.log(`📄 Customer ${i + 1} revisions:`, revisions);
+        if (revisions.length === 0) continue; // skip customers with no revisions
 
-        if (revisions.length === 0) {
-            console.warn(`⏭️ Skipping customer ${i + 1}: No revisions selected`);
-            continue;
-        }
-
-        // Get customer ID and name for filename
-        const getField = (possibleNames) => {
-            for (const name of possibleNames) {
-                const key = Object.keys(rowData).find(k => k.toLowerCase() === name.toLowerCase());
-                if (key && rowData[key]) return rowData[key];
-            }
-            return '';
-        };
-
-        const customerId = getField(['id', 'customer id', 'customer_id', 'client id', 'record id']);
-        const customerName = getField(['name', 'customer name', 'client name', 'full name', 'customer', 'project name', 'document revision description']);
-
-        console.log(`   📝 Generating for: ${customerName || customerId || `Customer ${i + 1}`}`);
-        console.log(`   🔢 Revisions to generate: [${revisions.join(', ')}]`);
-
-        // Generate one coversheet per selected revision
-        for (const revision of revisions) {
-            currentCoversheet++;
-
-            // Add revision and automation data
-            rowData.currentRevision = revision;
-            rowData.automatedAt = customerData[i]?.automatedAt || null;
-
-            console.log(`   ✏️ Creating coversheet ${currentCoversheet}/${totalCoversheets} with Revision: ${revision}`);
-
-            // Generate coversheet HTML
-            const coversheetHTML = generateCoversheetHTML(rowData, currentCoversheet);
-
-            // Create filename with customer ID/name and revision
-            let fileName;
-            if (customerId) {
-                fileName = `coversheet_${sanitizeFileName(customerId)}_REV_${revision}.html`;
-            } else if (customerName) {
-                fileName = `coversheet_${sanitizeFileName(customerName)}_REV_${revision}.html`;
-            } else {
-                fileName = `coversheet_${i + 1}_REV_${revision}.html`;
-            }
-
-            console.log(`   💾 Adding to ZIP: ${fileName}`);
-            zip.file(fileName, coversheetHTML);
-
-            // Update progress
-            updateProgress(currentCoversheet, totalCoversheets, `Generating coversheet ${currentCoversheet} of ${totalCoversheets}...`);
-        }
+        rowData.selectedRevisions = revisions;
+        records.push(rowData);
     }
 
-    // Generate ZIP file
-    updateProgress(totalCoversheets, totalCoversheets, 'Creating ZIP file...');
+    if (records.length === 0) {
+        showToast('No revisions selected. Please assign revisions in the Automation Dashboard first.', 'error');
+        return;
+    }
+
+    // Show progress
+    document.getElementById('progressSection').classList.remove('hidden');
+    document.getElementById('dataPreviewSection').classList.add('hidden');
+    updateProgress(0, 1, 'Sending data to server...');
 
     try {
-        const content = await zip.generateAsync({ type: 'blob' });
+        const response = await fetch('/api/generate-docx', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ records, revision: 'A' }),
+        });
 
-        // Download ZIP
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(content);
-        link.download = `customer_coversheets_${new Date().getTime()}.zip`;
-        link.click();
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ message: 'Server error' }));
+            throw new Error(err.message || 'Server error');
+        }
 
-        // Hide progress, show success
+        updateProgress(1, 1, 'Downloading...');
+
+        // Determine filename from Content-Disposition header
+        const disposition = response.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : (records.length === 1 ? 'coversheet.docx' : 'coversheets.zip');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+
         setTimeout(() => {
             document.getElementById('progressSection').classList.add('hidden');
             document.getElementById('dataPreviewSection').classList.remove('hidden');
-
-            let message = `Successfully generated ${totalCoversheets} coversheets!`;
-            if (skippedCustomers.length > 0) {
-                message += ` (Skipped ${skippedCustomers.length} customers with no revisions)`;
-            }
-            showToast(message, 'success');
+            showToast(`Downloaded ${filename} with ${records.length} coversheet(s)`, 'success');
         }, 500);
+
     } catch (error) {
-        console.error('Error generating ZIP:', error);
-        showToast('Error creating ZIP file', 'error');
+        console.error('❌ Error generating DOCX:', error);
         document.getElementById('progressSection').classList.add('hidden');
         document.getElementById('dataPreviewSection').classList.remove('hidden');
+        showToast('Error generating Word document: ' + error.message, 'error');
     }
 }
 

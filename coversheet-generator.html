@@ -160,11 +160,11 @@
                     </div>
                     <div class="p-6 flex justify-between items-center" style="border-top: 1px solid #e2e8f0; background-color: #f8fafc;">
                         <p style="font-size: 15px; color: #475569; font-weight: 600;" class="dark:text-slate-400">
-                            <span style="font-weight: 700; color: #1e293b;" class="dark:text-white" id="rowCount">0</span> customer records will generate <span style="font-weight: 700; color: #1e293b;" class="dark:text-white" id="coversheetCount">0</span> coversheets (one per selected revision)
+                            <span style="font-weight: 700; color: #1e293b;" class="dark:text-white" id="rowCount">0</span> customer records will generate <span style="font-weight: 700; color: #1e293b;" class="dark:text-white" id="coversheetCount">0</span> Word documents (one per selected revision)
                         </p>
                         <button onclick="generateCoversheets()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-weight: 600; padding: 12px 32px; border-radius: 10px; font-size: 15px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: all 0.3s;" class="flex items-center gap-2 hover:scale-105 active:scale-95" onmouseover="this.style.boxShadow='0 6px 20px rgba(37, 99, 235, 0.4)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(37, 99, 235, 0.3)'">
                             <span class="material-symbols-outlined">description</span>
-                            Generate Customer Coversheets
+                            Generate Word Documents (.docx)
                         </button>
                     </div>
                 </div>
@@ -178,8 +178,8 @@
                             <div class="inline-flex items-center justify-center size-20 rounded-full mb-6" style="background-color: #dbeafe;">
                                 <span class="material-symbols-outlined text-[48px] animate-spin" style="color: #2563eb;">progress_activity</span>
                             </div>
-                            <h3 style="font-size: 24px; font-weight: 700; color: #1e293b; line-height: 1.3; margin-bottom: 12px;" class="dark:text-white">Generating Customer Coversheets</h3>
-                            <p style="font-size: 16px; color: #64748b; font-weight: 500; margin-bottom: 32px;" class="dark:text-slate-400">Creating individual coversheets for each customer record...</p>
+                            <h3 style="font-size: 24px; font-weight: 700; color: #1e293b; line-height: 1.3; margin-bottom: 12px;" class="dark:text-white">Generating Word Documents</h3>
+                            <p style="font-size: 16px; color: #64748b; font-weight: 500; margin-bottom: 32px;" class="dark:text-slate-400">Creating .docx coversheets for each customer record...</p>
                             <div class="w-full rounded-full h-3 overflow-hidden" style="background-color: #e2e8f0;">
                                 <div id="progressBar" class="h-3 rounded-full transition-all duration-300" style="width: 0%; background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);"></div>
                             </div>
